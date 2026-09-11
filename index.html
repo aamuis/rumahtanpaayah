@@ -238,32 +238,17 @@
     btnNext.disabled = cur >= totalPages;
   }
 
-  function isTouchMobileDevice() {
-    var uaMobile = /Android|iPhone|iPod|iPad|Mobi|Windows Phone/i.test(navigator.userAgent);
-    var coarsePointer = window.matchMedia &&
-      window.matchMedia("(pointer: coarse)").matches &&
-      window.matchMedia("(hover: none)").matches;
-    return uaMobile || coarsePointer;
-  }
-  var MOBILE_DEVICE = isTouchMobileDevice();
-
   function computeBoxSize() {
     var vw = window.innerWidth;
-    var vh = window.innerHeight - (MOBILE_DEVICE ? 62 : 78); // reserve room for bottom bar
-    // Phones (any orientation) and narrow windows show ONE page at a time —
-    // size it as large as possible to fill the screen. Wide desktop windows
-    // show a two-page spread instead.
-    var singlePageMode = MOBILE_DEVICE || vw < vh || vw < 820;
-    var spreadFactor = singlePageMode ? 1 : 2;
-    var widthMargin = singlePageMode ? 0.995 : 0.94;
-    var heightMargin = singlePageMode ? 0.995 : 0.94;
-
-    var maxW = vw * widthMargin;
-    var maxH = vh * heightMargin;
-    var hFromW = maxW / (spreadFactor * pageRatio);
+    var vh = window.innerHeight - 74; // reserve room for bottom bar
+    // Try to fit a two-page spread (width = 2 * pageWidth) within viewport,
+    // constrained by page aspect ratio (pageRatio = width/height).
+    var maxSpreadW = vw * 0.96;
+    var maxH = vh * 0.96;
+    var hFromW = maxSpreadW / (2 * pageRatio);
     var h = Math.min(maxH, hFromW);
     var w = h * pageRatio;
-    return { pageW: Math.max(160, Math.round(w)), pageH: Math.max(220, Math.round(h)) };
+    return { pageW: Math.round(w), pageH: Math.round(h) };
   }
 
   function initBook() {
@@ -272,11 +257,11 @@
     pageFlip = new St.PageFlip(bookEl, {
       width: box.pageW,
       height: box.pageH,
-      size: "fixed",
-      minWidth: 160,
-      maxWidth: 2000,
-      minHeight: 220,
-      maxHeight: 2800,
+      size: "stretch",
+      minWidth: 220,
+      maxWidth: 1200,
+      minHeight: 320,
+      maxHeight: 1700,
       maxShadowOpacity: 0.5,
       showCover: true,
       mobileScrollSupport: false,
@@ -298,13 +283,9 @@
     setTimeout(function () { loaderEl.style.display = "none"; }, 550);
     barEl.classList.add("show");
 
-    var resizeTimer = null;
     window.addEventListener("resize", function () {
-      clearTimeout(resizeTimer);
-      resizeTimer = setTimeout(function () {
-        var b = computeBoxSize();
-        pageFlip.updateState({ width: b.pageW, height: b.pageH });
-      }, 120);
+      var b = computeBoxSize();
+      pageFlip.updateState({ width: b.pageW, height: b.pageH });
     });
 
     backgroundRenderAll();
