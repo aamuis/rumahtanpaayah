@@ -240,12 +240,17 @@
 
   function computeBoxSize() {
     var vw = window.innerWidth;
-    var vh = window.innerHeight - 84; // reserve room for bottom bar + breathing room
-    // Fit a two-page spread (width = 2 * pageWidth) fully within the viewport,
-    // constrained by BOTH available width and available height at once.
-    var maxSpreadW = vw * 0.94;
-    var maxH = vh * 0.94;
-    var hFromW = maxSpreadW / (2 * pageRatio);
+    var vh = window.innerHeight - 78; // reserve room for bottom bar + breathing room
+    // Below this width (or in portrait orientation) the book shows ONE page
+    // at a time instead of a two-page spread — size for a single full page.
+    var singlePageMode = vw < vh || vw < 820;
+    var spreadFactor = singlePageMode ? 1 : 2;
+    var widthMargin = singlePageMode ? 0.98 : 0.94;
+    var heightMargin = singlePageMode ? 0.99 : 0.94;
+
+    var maxW = vw * widthMargin;
+    var maxH = vh * heightMargin;
+    var hFromW = maxW / (spreadFactor * pageRatio);
     var h = Math.min(maxH, hFromW);
     var w = h * pageRatio;
     return { pageW: Math.max(160, Math.round(w)), pageH: Math.max(220, Math.round(h)) };
