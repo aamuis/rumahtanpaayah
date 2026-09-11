@@ -240,15 +240,15 @@
 
   function computeBoxSize() {
     var vw = window.innerWidth;
-    var vh = window.innerHeight - 74; // reserve room for bottom bar
-    // Try to fit a two-page spread (width = 2 * pageWidth) within viewport,
-    // constrained by page aspect ratio (pageRatio = width/height).
-    var maxSpreadW = vw * 0.96;
-    var maxH = vh * 0.96;
+    var vh = window.innerHeight - 84; // reserve room for bottom bar + breathing room
+    // Fit a two-page spread (width = 2 * pageWidth) fully within the viewport,
+    // constrained by BOTH available width and available height at once.
+    var maxSpreadW = vw * 0.94;
+    var maxH = vh * 0.94;
     var hFromW = maxSpreadW / (2 * pageRatio);
     var h = Math.min(maxH, hFromW);
     var w = h * pageRatio;
-    return { pageW: Math.round(w), pageH: Math.round(h) };
+    return { pageW: Math.max(160, Math.round(w)), pageH: Math.max(220, Math.round(h)) };
   }
 
   function initBook() {
@@ -257,11 +257,11 @@
     pageFlip = new St.PageFlip(bookEl, {
       width: box.pageW,
       height: box.pageH,
-      size: "stretch",
-      minWidth: 220,
-      maxWidth: 1200,
-      minHeight: 320,
-      maxHeight: 1700,
+      size: "fixed",
+      minWidth: 160,
+      maxWidth: 2000,
+      minHeight: 220,
+      maxHeight: 2800,
       maxShadowOpacity: 0.5,
       showCover: true,
       mobileScrollSupport: false,
@@ -283,9 +283,13 @@
     setTimeout(function () { loaderEl.style.display = "none"; }, 550);
     barEl.classList.add("show");
 
+    var resizeTimer = null;
     window.addEventListener("resize", function () {
-      var b = computeBoxSize();
-      pageFlip.updateState({ width: b.pageW, height: b.pageH });
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(function () {
+        var b = computeBoxSize();
+        pageFlip.updateState({ width: b.pageW, height: b.pageH });
+      }, 120);
     });
 
     backgroundRenderAll();
