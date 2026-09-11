@@ -238,15 +238,25 @@
     btnNext.disabled = cur >= totalPages;
   }
 
+  function isTouchMobileDevice() {
+    var uaMobile = /Android|iPhone|iPod|iPad|Mobi|Windows Phone/i.test(navigator.userAgent);
+    var coarsePointer = window.matchMedia &&
+      window.matchMedia("(pointer: coarse)").matches &&
+      window.matchMedia("(hover: none)").matches;
+    return uaMobile || coarsePointer;
+  }
+  var MOBILE_DEVICE = isTouchMobileDevice();
+
   function computeBoxSize() {
     var vw = window.innerWidth;
-    var vh = window.innerHeight - 78; // reserve room for bottom bar + breathing room
-    // Below this width (or in portrait orientation) the book shows ONE page
-    // at a time instead of a two-page spread — size for a single full page.
-    var singlePageMode = vw < vh || vw < 820;
+    var vh = window.innerHeight - (MOBILE_DEVICE ? 62 : 78); // reserve room for bottom bar
+    // Phones (any orientation) and narrow windows show ONE page at a time —
+    // size it as large as possible to fill the screen. Wide desktop windows
+    // show a two-page spread instead.
+    var singlePageMode = MOBILE_DEVICE || vw < vh || vw < 820;
     var spreadFactor = singlePageMode ? 1 : 2;
-    var widthMargin = singlePageMode ? 0.98 : 0.94;
-    var heightMargin = singlePageMode ? 0.99 : 0.94;
+    var widthMargin = singlePageMode ? 0.995 : 0.94;
+    var heightMargin = singlePageMode ? 0.995 : 0.94;
 
     var maxW = vw * widthMargin;
     var maxH = vh * heightMargin;
